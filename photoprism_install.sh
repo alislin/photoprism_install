@@ -1,3 +1,5 @@
+# #################################################################
+# curl https://raw.githubusercontent.com/alislin/photoprism_install/main/photoprism_install.sh | sudo bash
 # chmod a+x photoprism_install.sh
 
 # 检查 / 创建 目录
