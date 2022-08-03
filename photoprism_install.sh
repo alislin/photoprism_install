@@ -5,7 +5,10 @@
 # 检查 / 创建 目录
 create_directory(){
     if [ ! -d $1 ]; then
+        echo create directory: $1
         mkdir $1
+    else
+        echo $1 exist
     fi
 }
 
