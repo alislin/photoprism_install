@@ -5,11 +5,14 @@
 # 检查 / 创建 目录
 create_directory(){
     if [ ! -d $1 ]; then
-        echo create directory: $1
+        echo "+ create directory: $1"
         mkdir $1
     else
-        echo $1 exist
+        echo "$1 exist"
     fi
+}
+log(){
+    echo "$1"
 }
 
 # 配置rclone
@@ -33,40 +36,59 @@ chown root:root /usr/bin/rclone
 chmod 755 /usr/bin/rclone
 
 # 配置
+# (echo n
+# sleep 1
+# echo od
+# sleep 1
+# echo 32
+# sleep 1
+# echo
+# sleep 1
+# echo
+# sleep 1
+# echo 1
+# sleep 1
+# echo n
+# sleep 1
+# echo n)|
 rclone config
 
 # 配置挂载
 IMPORT_FILE=/etc/systemd/system/rclone-import.service
 if [ ! -f $IMPORT_FILE ]; then
-    echo "[Unit]" >> $IMPORT_FILE
-    echo "Description=Rclone" >> $IMPORT_FILE
-    echo "After=network-online.target" >> $IMPORT_FILE
-    echo "" >> $IMPORT_FILE
-    echo "[Service]" >> $IMPORT_FILE
-    echo "Type=simple" >> $IMPORT_FILE
-    echo "ExecStart=rclone --vfs-cache-mode full mount od:photos/Import /mnt/onedrive/import" >> $IMPORT_FILE
-    echo "Restart=on-abort" >> $IMPORT_FILE
-    echo "User=root" >> $IMPORT_FILE
-    echo "" >> $IMPORT_FILE
-    echo "[Install]" >> $IMPORT_FILE
-    echo "WantedBy=default.target" >> $IMPORT_FILE
+cat>$IMPORT_FILE<<EOF
+[Unit]
+Description=Rclone
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=rclone --vfs-cache-mode full mount od:photos/Import /mnt/onedrive/import
+Restart=on-abort
+User=root
+
+[Install]
+WantedBy=default.target
+EOF
+
 fi
 IMPORT_FILE=/etc/systemd/system/rclone-originals.service
 if [ ! -f $IMPORT_FILE ]; then
-    echo "[Unit]" >> $IMPORT_FILE
-    echo "Description=Rclone" >> $IMPORT_FILE
-    echo "After=network-online.target" >> $IMPORT_FILE
-    echo "" >> $IMPORT_FILE
-    echo "[Service]" >> $IMPORT_FILE
-    echo "Type=simple" >> $IMPORT_FILE
-    echo "ExecStart=rclone --vfs-cache-mode full mount od:photos/photoprism /mnt/onedrive/originals" >> $IMPORT_FILE
-    echo "Restart=on-abort" >> $IMPORT_FILE
-    echo "User=root" >> $IMPORT_FILE
-    echo "" >> $IMPORT_FILE
-    echo "[Install]" >> $IMPORT_FILE
-    echo "WantedBy=default.target" >> $IMPORT_FILE
+cat>$IMPORT_FILE<<EOF
+[Unit]
+Description=Rclone
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=rclone --vfs-cache-mode full mount od:photos/photoprism /mnt/onedrive/originals
+Restart=on-abort
+User=root
+
+[Install]
+WantedBy=default.target
+EOF
 fi
-# curl -O https://dxxx.com/rclone-import.service
 
 # 开机执行服务自动挂载
 systemctl enable rclone-originals
@@ -77,13 +99,12 @@ systemctl start rclone-import
 
 # 安装 photoprism
 DIR=/opt/photoprism
-if [! -d $DIR]; then
-    mkdir $DIR
-fi
-cd /opt/photoprism
+create_directory $DIR
+cd $DIR
 curl -O https://raw.githubusercontent.com/alislin/photoprism_install/main/docker-compose.od.yml
 docker-compose -f docker-compose.od.yml up -d
 
+echo ""
 echo "****************************************"
 echo "Install finish!"
 echo "default user: admin"
